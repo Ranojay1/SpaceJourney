@@ -40,6 +40,11 @@ class SpaceJourney {
         this.shipPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         this.travelAngle = 0;
         this.speedLinesInterval = null;
+        // Background warp / parallax state
+        this.isWarping = false;
+        this.bgOffset = { x: 0, y: 0 };
+        this.warpIntensity = 0; // current intensity (px/frame-ish)
+        this.warpTargetIntensity = 0; // target intensity to ease towards
         
         this.ctx = this.elements.canvas.getContext('2d');
         // collection for nebula elements to avoid querying the DOM each frame
@@ -47,7 +52,7 @@ class SpaceJourney {
         this._lastNebulaScale = 1;
         this.init();
     }
-    
+
     async init() {
         await this.loadConfig();
         this.setupTitleScreen();
@@ -101,23 +106,56 @@ class SpaceJourney {
         this.ctx.fillStyle = '#000008';
         this.ctx.fillRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
         
+        const w = this.elements.canvas.width;
+        const h = this.elements.canvas.height;
         for (const star of this.stars) {
             star.alpha += star.speed * star.direction;
             if (star.alpha >= 1 || star.alpha <= 0.2) star.direction *= -1;
-            
+
+            // draw taking into account subtle background offset (parallax during warp)
+            // Attenuate movement for larger stars for a nicer depth effect
+            const normalizedRadius = (star.radius - 0.5) / 1.5; // 0..1
+            const parallaxFactor = 0.6 - normalizedRadius * 0.35; // ~0.6 (small stars) .. 0.25 (large stars)
+            let drawX = star.x + this.bgOffset.x * parallaxFactor;
+            let drawY = star.y + this.bgOffset.y * parallaxFactor;
+
+            // Visual wrapping: wrap the drawn position so the field stays populated
+            if (drawX < -50) drawX += w + 100;
+            if (drawX > w + 50) drawX -= w + 100;
+            if (drawY < -50) drawY += h + 100;
+            if (drawY > h + 50) drawY -= h + 100;
+
             this.ctx.beginPath();
-            this.ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            this.ctx.arc(drawX, drawY, star.radius, 0, Math.PI * 2);
             this.ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
             this.ctx.fill();
-            
+
             // Glow effect for larger stars
             if (star.radius > 1) {
                 this.ctx.beginPath();
-                this.ctx.arc(star.x, star.y, star.radius * 2, 0, Math.PI * 2);
+                this.ctx.arc(drawX, drawY, star.radius * 2, 0, Math.PI * 2);
                 this.ctx.fillStyle = `rgba(200, 220, 255, ${star.alpha * 0.2})`;
                 this.ctx.fill();
             }
         }
+
+        // Update warp/parallax offsets easing toward target intensity
+        try {
+            // Determine target intensity (set when warp starts/stops)
+            const target = this.warpTargetIntensity || 0;
+            // ease current intensity toward target (more gentle)
+            this.warpIntensity += (target - this.warpIntensity) * 0.06;
+
+            // apply offset opposite travel direction so stars 'move past' the ship
+            const ox = Math.cos(this.travelAngle) * this.warpIntensity;
+            const oy = Math.sin(this.travelAngle) * this.warpIntensity;
+            // apply a small multiplier so background motion is subtle
+            const bgMoveMul = 0.22;
+            this.bgOffset.x += -ox * bgMoveMul;
+            this.bgOffset.y += -oy * bgMoveMul;
+
+            // visual wrapping is handled during draw; do not mutate star world positions here
+        } catch (e) {}
         
         // Update nebula visibility when scale changes enough
         try {
@@ -424,15 +462,17 @@ class SpaceJourney {
     }
     
     startSpeedLines() {
-        // Clear any existing interval
+        // Switch from DOM speed-lines to subtle background parallax
         this.stopSpeedLines();
-        
-        this.speedLinesInterval = setInterval(() => {
-            this.createSpeedLine();
-        }, 30);
+        this.isWarping = true;
+        // target intensity in pixels per frame-ish; configurable via config.warpIntensity
+        this.warpTargetIntensity = (this.config.warpIntensity || 12);
     }
     
     stopSpeedLines() {
+        // ramp down the warp effect and clear any legacy interval
+        this.warpTargetIntensity = 0;
+        this.isWarping = false;
         if (this.speedLinesInterval) {
             clearInterval(this.speedLinesInterval);
             this.speedLinesInterval = null;
