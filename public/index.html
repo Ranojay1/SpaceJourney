@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Journey</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- debug banners removed -->
+    <canvas id="stars-canvas"></canvas>
+    <div id="warp-overlay" class="hidden"></div>
+    <div id="universe">
+        <div id="stars-container">
+            <div id="spaceship">
+                <div class="ship-body"></div>
+                <div class="ship-wing left"></div>
+                <div class="ship-wing right"></div>
+                <div class="ship-flame"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="title-screen">
+        <h1 id="main-title"></h1>
+        <p id="subtitle"></p>
+        <button id="start-btn"></button>
+    </div>
+    
+    <div id="message-box" class="hidden">
+        <p id="message-text"></p>
+    </div>
+    
+    <div id="final-screen" class="hidden">
+        <div id="final-message"></div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

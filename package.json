@@ -1,0 +1,12 @@
+{
+  "name": "space-journey",
+  "version": "1.0.0",
+  "description": "Interactive space journey with stars and planets",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
