@@ -69,9 +69,6 @@ Luego abre `http://localhost:3000` (o el puerto que hayas configurado).
 
 ## Licencia
 
-Licencia por definir. Añade aquí la licencia que prefieras (MIT, Apache-2.0, etc.).
+Este proyecto usa una licencia no comercial.
 
 ---
-
-Si quieres que lo traduzca al inglés, que añada badges, o que haga el commit por ti, dímelo y lo hago.
-
