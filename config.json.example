@@ -8,7 +8,7 @@
   "spaceElements": {
     "shootingStars": {
       "enabled": true,
-      "frequency": 1000,
+      "frequency": 3000,
       "length": 150
     },
     "asteroids": {

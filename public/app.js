@@ -481,21 +481,35 @@ class SpaceJourney {
         }, freq);
     }
     
+    
     createShootingStar() {
-        const length = this.config.spaceElements?.shootingStars?.length || 100;
         const star = document.createElement('div');
         star.className = 'shooting-star';
+
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * window.innerHeight / 2;
         
-        // Spawn near current camera view
-        const camX = -this.camera.x + window.innerWidth / 2;
-        const camY = -this.camera.y + window.innerHeight / 2;
-        
-        star.style.left = `${camX + (Math.random() - 0.3) * window.innerWidth}px`;
-        star.style.top = `${camY + (Math.random() - 0.5) * window.innerHeight * 0.5}px`;
-        star.style.width = `${length}px`;
-        star.style.transform = `rotate(${30 + Math.random() * 30}deg)`;
+        const endX = (Math.random() * window.innerWidth * 1.2) - (window.innerWidth * 0.2);
+        const endY = (Math.random() * window.innerHeight * 1.2) - (window.innerHeight * 0.2);
+
+        const travelX = endX - startX;
+        const travelY = endY - startY;
+
+        const angle = Math.atan2(travelY, travelX) * 180 / Math.PI + 180;
+        const duration = 1 + Math.random() * 1.5;
+        const tailLength = 100 + Math.random() * 200;
+
+        star.style.left = `${startX}px`;
+        star.style.top = `${startY}px`;
+        star.style.setProperty('--angle', `${angle}deg`);
+        star.style.setProperty('--duration', `${duration}s`);
+        star.style.setProperty('--tail-length', `${tailLength}px`);
+        star.style.setProperty('--end-x', `${travelX}px`);
+        star.style.setProperty('--end-y', `${travelY}px`);
+
         this.elements.starsContainer.appendChild(star);
-        setTimeout(() => star.remove(), 1000);
+
+        setTimeout(() => star.remove(), duration * 1000);
     }
 
     createNebulae() {
